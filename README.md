@@ -20,6 +20,11 @@ subscription.Subscribe(ctx, func (m int) {
 })
 ```
 
+## Publish a message
+```go
+topic.Publish(1)
+```
+
 ## Brief Example
 
 ```go
