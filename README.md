@@ -31,7 +31,7 @@ topic.Publish(1)
 ctx, cancel := context.WithCancel(context.Background())
 
 topic := gpubsub.NewTopic[int]("DummyData")
-subscription := topic.NewSubscription("DummyConsumer", 10000)
+subscription := topic.NewSubscription("DummyConsumer", 10000, 2)
 
 var wg sync.WaitGroup
 
