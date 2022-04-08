@@ -12,7 +12,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	topic := gpubsub.NewTopic[int]("DummyData")
-	subscription := topic.NewSubscription("DummyConsumer", 10000)
+	subscription := topic.NewSubscription("DummyConsumer", 10000, 2)
 
 	var wg sync.WaitGroup
 
@@ -20,6 +20,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		subscription.Subscribe(ctx, func(m int) {
+			time.Sleep(1 * time.Second)
 			log.Printf("data: %d\n", m)
 		})
 	}()
@@ -29,7 +30,7 @@ func main() {
 		topic.Publish(i)
 	}
 	cancel()
-	for j := 11; j < 20; j++ {
+	for j := 11; j < 100; j++ {
 		time.Sleep(1 * time.Millisecond)
 		topic.Publish(j)
 	}
