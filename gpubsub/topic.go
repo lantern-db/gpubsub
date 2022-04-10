@@ -34,8 +34,8 @@ func (t *Topic[T]) Subscriptions() map[string]*Subscription[T] {
 
 func (t *Topic[T]) Publish(body T) {
 	for _, s := range t.subscriptions {
-		message := s.NewMessage(body)
-		s.Publish(message)
+		message := s.newMessage(body)
+		s.publish(message)
 	}
 }
 
@@ -57,7 +57,7 @@ func (t *Topic[T]) NewSubscription(name string) *Subscription[T] {
 	return t.subscriptions[name]
 }
 
-func (t *Topic[T]) Register(subscription *Subscription[T]) {
+func (t *Topic[T]) register(subscription *Subscription[T]) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -66,7 +66,7 @@ func (t *Topic[T]) Register(subscription *Subscription[T]) {
 	}
 }
 
-func (t *Topic[T]) Unregister(subscription *Subscription[T]) {
+func (t *Topic[T]) unregister(subscription *Subscription[T]) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
