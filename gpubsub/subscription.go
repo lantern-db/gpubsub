@@ -28,51 +28,10 @@ func (s *Subscription[T]) Topic() *Topic[T] {
 	return s.topic
 }
 
-func (s *Subscription[T]) Register() {
-	s.topic.Register(s)
-}
-
-func (s *Subscription[T]) Unregister() {
-	s.topic.Unregister(s)
-}
-
-func (s *Subscription[T]) NewMessage(body T) *Message[T] {
-	return &Message[T]{
-		id:           uuid.New().String(),
-		body:         body,
-		subscription: s,
-		createdAt:    time.Now(),
-	}
-}
-
-func (s *Subscription[T]) Publish(message *Message[T]) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.ch <- message.id
-	s.messages[message.id] = message
-}
-
-func (s *Subscription[T]) ack(message *Message[T]) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	delete(s.messages, message.id)
-}
-
-func (s *Subscription[T]) nack(message *Message[T]) {
-	message.touch()
-	s.messages[message.id] = message
-}
-
-func (s *Subscription[T]) remind(message *Message[T]) {
-	s.ch <- message.id
-}
-
 func (s *Subscription[T]) Subscribe(ctx context.Context, consumer func(*Message[T])) {
 	var wg sync.WaitGroup
 	sem := semaphore.NewWeighted(s.concurrency)
-	s.Register()
+	s.register()
 	go s.watch(ctx, s.interval, s.ttl)
 
 	for {
@@ -85,7 +44,7 @@ func (s *Subscription[T]) Subscribe(ctx context.Context, consumer func(*Message[
 			}
 
 		case <-ctx.Done():
-			s.Unregister()
+			s.unregister()
 			log.Printf("closing subscription: %s\n", s.Name())
 			cancelCtx := context.Background()
 			for {
@@ -104,6 +63,45 @@ func (s *Subscription[T]) Subscribe(ctx context.Context, consumer func(*Message[
 			}
 		}
 	}
+}
+
+func (s *Subscription[T]) register() {
+	s.topic.register(s)
+}
+
+func (s *Subscription[T]) unregister() {
+	s.topic.unregister(s)
+}
+
+func (s *Subscription[T]) newMessage(body T) *Message[T] {
+	return &Message[T]{
+		id:           uuid.New().String(),
+		body:         body,
+		subscription: s,
+		createdAt:    time.Now(),
+	}
+}
+
+func (s *Subscription[T]) publish(message *Message[T]) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.ch <- message.id
+	s.messages[message.id] = message
+}
+
+func (s *Subscription[T]) ack(message *Message[T]) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	delete(s.messages, message.id)
+}
+
+func (s *Subscription[T]) nack(message *Message[T]) {
+}
+
+func (s *Subscription[T]) remind(message *Message[T]) {
+	s.ch <- message.id
 }
 
 func (s *Subscription[T]) do(ctx context.Context, wg *sync.WaitGroup, sem *semaphore.Weighted, consumer func(*Message[T]), message *Message[T]) error {
