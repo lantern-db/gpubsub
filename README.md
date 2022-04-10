@@ -16,7 +16,11 @@ subscription := topic.NewSubscription("DummyConsumer")
 
 ```go
 subscription.Subscribe(ctx, func (m *gpubsub.Message[int]) {
-    // some consumer process 
+	// get the content of message which has type T
+	message := m.Body()
+	
+	// some consumer process 
+	
 	// Ack if succeed
 	m.Ack()
 	
