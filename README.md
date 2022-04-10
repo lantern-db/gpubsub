@@ -24,7 +24,7 @@ subscription.Subscribe(ctx, func (m *gpubsub.Message[int]) {
 	// Ack if succeed
 	m.Ack()
 	
-	// Nack if failed
+	// Nack if failed, retry later
 	m.Nack()
 })
 ```
