@@ -1,6 +1,8 @@
 package gpubsub
 
-import "sync"
+import (
+	"sync"
+)
 
 type Topic[T any] struct {
 	mu            sync.RWMutex
@@ -23,19 +25,17 @@ func (t *Topic[T]) Subscriptions() map[string]*Subscription[T] {
 	return t.subscriptions
 }
 
-func (t *Topic[T]) Publish(message T) {
+func (t *Topic[T]) Publish(body T) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	for _, subscription := range t.subscriptions {
-		select {
-		case subscription.ch <- message:
-		default:
-		}
+	for _, s := range t.subscriptions {
+		message := s.NewMessage(body)
+		s.Publish(message)
 	}
 }
 
-func (t *Topic[T]) NewSubscription(name string, bufferSize int, concurrency int64) *Subscription[T] {
+func (t *Topic[T]) NewSubscription(name string, concurrency int64) *Subscription[T] {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -43,7 +43,8 @@ func (t *Topic[T]) NewSubscription(name string, bufferSize int, concurrency int6
 		t.subscriptions[name] = &Subscription[T]{
 			name:        name,
 			topic:       t,
-			ch:          make(chan T, bufferSize),
+			ch:          make(chan string, 65536),
+			messages:    make(map[string]*Message[T]),
 			concurrency: concurrency,
 		}
 	}

@@ -9,13 +9,13 @@ topic := gpubsub.NewTopic[int]("DummyData")
 ## Generate Subscription
 
 ```go
-subscription := topic.NewSubscription("DummyConsumer", 10000, 2)
+subscription := topic.NewSubscription("DummyConsumer", 2)
 ```
 
 ## Consume messages with callback
 
 ```go
-subscription.Subscribe(ctx, func (m int) {
+subscription.Subscribe(ctx, func (m *gpubsub.Message[int]) {
   // some consumer process
 })
 ```
@@ -31,15 +31,16 @@ topic.Publish(1)
 ctx, cancel := context.WithCancel(context.Background())
 
 topic := gpubsub.NewTopic[int]("DummyData")
-subscription := topic.NewSubscription("DummyConsumer", 10000, 2)
+subscription := topic.NewSubscription("DummyConsumer", 2)
 
 var wg sync.WaitGroup
 
 wg.Add(1)
 go func() {
   defer wg.Done()
-  subscription.Subscribe(ctx, func(m int) {
-    log.Printf("data: %d\n", m)
+  subscription.Subscribe(ctx, func(m gpubsub.Message[int]) {
+    log.Printf("data: %d\n", m.Body())
+	m.Ack()
   })
 }()
 
