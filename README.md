@@ -58,14 +58,9 @@ go func() {
 }()
 
 for i := 0; i < 10; i++ {
-  time.Sleep(1 * time.Millisecond)
   topic.Publish(i)
 }
 cancel()
-for j := 11; j < 20; j++ {
-  time.Sleep(1 * time.Millisecond)
-  topic.Publish(j)
-}
 
 wg.Wait()
 ```
