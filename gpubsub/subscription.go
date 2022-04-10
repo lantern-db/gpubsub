@@ -112,6 +112,7 @@ func (s *Subscription[T]) do(ctx context.Context, wg *sync.WaitGroup, sem *semap
 		go func() {
 			defer wg.Done()
 			defer sem.Release(1)
+			defer message.touch()
 			consumer(message)
 		}()
 		return nil
