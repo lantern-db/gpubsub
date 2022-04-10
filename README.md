@@ -38,6 +38,7 @@ topic.Publish(1)
 
 ```go
 ctx, cancel := context.WithCancel(context.Background())
+
 topicName := "DummyData"
 concurrency := int64(2)
 interval := 30 * time.Second
