@@ -10,9 +10,13 @@ import (
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
+	topicName := "DummyData"
+	concurrency := int64(2)
+	interval := 30 * time.Second
+	ttl := 1 * time.Hour
 
-	topic := gpubsub.NewTopic[int]("DummyData")
-	subscription := topic.NewSubscription("DummyConsumer", 2)
+	topic := gpubsub.NewTopic[int](topicName, concurrency, interval, ttl)
+	subscription := topic.NewSubscription("DummyConsumer")
 
 	var wg sync.WaitGroup
 

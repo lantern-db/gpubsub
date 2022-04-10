@@ -6,6 +6,7 @@ type Message[T any] struct {
 	id           string
 	body         T
 	subscription *Subscription[T]
+	lastViewedAt time.Time
 	createdAt    time.Time
 }
 
@@ -22,9 +23,13 @@ func (m *Message[T]) CreatedAt() time.Time {
 }
 
 func (m *Message[T]) Ack() {
-	m.subscription.Ack(m)
+	m.subscription.ack(m)
 }
 
 func (m *Message[T]) Nack() {
-	m.subscription.Nack(m)
+	m.subscription.nack(m)
+}
+
+func (m *Message[T]) touch() {
+	m.lastViewedAt = time.Now()
 }
