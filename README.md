@@ -53,7 +53,7 @@ go func() {
   defer wg.Done()
   subscription.Subscribe(ctx, func(m gpubsub.Message[int]) {
     log.Printf("data: %d\n", m.Body())
-	m.Ack()
+    m.Ack()
   })
 }()
 
