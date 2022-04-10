@@ -3,20 +3,29 @@
 ## Generate Topic
 
 ```go
-topic := gpubsub.NewTopic[int]("DummyData")
+topic := gpubsub.NewTopic[int](topicName, concurrency, interval, ttl)
 ```
 
 ## Generate Subscription
 
 ```go
-subscription := topic.NewSubscription("DummyConsumer", 10000, 2)
+subscription := topic.NewSubscription("DummyConsumer")
 ```
 
 ## Consume messages with callback
 
 ```go
-subscription.Subscribe(ctx, func (m int) {
-  // some consumer process
+subscription.Subscribe(ctx, func (m *gpubsub.Message[int]) {
+	// get the content of message which has type T
+	message := m.Body()
+	
+	// some consumer process 
+	
+	// Ack if succeed
+	m.Ack()
+	
+	// Nack if failed
+	m.Nack()
 })
 ```
 
@@ -29,17 +38,22 @@ topic.Publish(1)
 
 ```go
 ctx, cancel := context.WithCancel(context.Background())
+topicName := "DummyData"
+concurrency := int64(2)
+interval := 30 * time.Second
+ttl := 1 * time.Hour
 
-topic := gpubsub.NewTopic[int]("DummyData")
-subscription := topic.NewSubscription("DummyConsumer", 10000, 2)
+topic := gpubsub.NewTopic[int](topicName, concurrency, interval, ttl)
+subscription := topic.NewSubscription("DummyConsumer")
 
 var wg sync.WaitGroup
 
 wg.Add(1)
 go func() {
   defer wg.Done()
-  subscription.Subscribe(ctx, func(m int) {
-    log.Printf("data: %d\n", m)
+  subscription.Subscribe(ctx, func(m gpubsub.Message[int]) {
+    log.Printf("data: %d\n", m.Body())
+	m.Ack()
   })
 }()
 
@@ -59,16 +73,17 @@ wg.Wait()
 It will show belows.
 
 ```
-2022/03/25 21:49:09 data: 0
-2022/03/25 21:49:09 data: 1
-2022/03/25 21:49:09 data: 2
-2022/03/25 21:49:09 data: 3
-2022/03/25 21:49:09 data: 4
-2022/03/25 21:49:09 data: 5
-2022/03/25 21:49:09 data: 6
-2022/03/25 21:49:09 data: 7
-2022/03/25 21:49:09 data: 8
-2022/03/25 21:49:09 closing subscription: DummyConsumer
-2022/03/25 21:49:09 data: 9
+
+2022/04/10 13:59:26 closing subscription: DummyConsumer
+2022/04/10 13:59:27 data: 0
+2022/04/10 13:59:27 data: 1
+2022/04/10 13:59:28 data: 4
+2022/04/10 13:59:28 data: 3
+2022/04/10 13:59:29 data: 5
+2022/04/10 13:59:29 data: 6
+2022/04/10 13:59:30 data: 7
+2022/04/10 13:59:30 data: 8
+2022/04/10 13:59:31 data: 9
+2022/04/10 13:59:31 data: 2
 
 ```
