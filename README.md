@@ -1,5 +1,11 @@
 # gpubsub - A generic PubSub messaging -
 
+## Install
+
+```sh
+go get github.com/lantern-db/gpubsub@v0.0.3
+```
+
 ## Generate Topic
 
 ```go
