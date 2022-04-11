@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"gpubsub/gpubsub"
+	"github.com/lantern-db/gpubsub"
 	"log"
 	"sync"
 	"time"

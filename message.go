@@ -1,6 +1,8 @@
 package gpubsub
 
-import "time"
+import (
+	"time"
+)
 
 type Message[T any] struct {
 	id           string
