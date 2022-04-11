@@ -21,11 +21,13 @@ subscription.Subscribe(ctx, func (m *gpubsub.Message[int]) {
 	
 	// some consumer process 
 	
-	// Ack if succeed
-	m.Ack()
-	
-	// Nack if failed, retry later
-	m.Nack()
+	if err == nil {
+		// Ack if succeed
+		m.Ack()
+	} else {
+		// Nack if failed, retry later
+		m.Nack()
+	}
 })
 ```
 
